@@ -1,0 +1,69 @@
+function Lazer(x, y, angle)
+    local LAZER_SPEED = 500 -- lazer speed in pixel/second
+    local EXPLODE_DUR = 0.2 -- explosion duration
+   
+    return {
+        x = x,
+        y = y,
+        x_vel = LAZER_SPEED * math.cos(angle) / love.timer.getFPS(),
+        y_vel = -LAZER_SPEED * math.sin(angle) / love.timer.getFPS(),
+        distance = 0, -- distance traveled
+        alive = true,
+        -- exploading: 0 = safe; 1 = exploading; 2 = done exploading
+        exploading = 0,
+        expload_time = 0,
+
+        draw = function (self)
+            -- if lazer is not exploading
+            if self.exploading < 1 then
+                love.graphics.setColor(1, 1, 1)
+                -- set size of points in px (or dpi, idk)
+                love.graphics.setPointSize(3)
+                -- put point on screen
+                love.graphics.points(self.x, self.y)
+            else -- if lazer exploaded
+                -- TODO: Change explosion colors
+                love.graphics.setColor(1, 104/255, 0)
+                love.graphics.circle("fill", self.x, self.y, 7 * 1.5)
+
+                love.graphics.setColor(1, 234/255, 0)
+                love.graphics.circle("fill", self.x, self.y, 7 * 1)
+            end
+        end,
+
+        move = function (self)
+            self.x = self.x + self.x_vel
+            self.y = self.y + self.y_vel
+
+            if self.expload_time > 0 then
+                self.exploading = 1
+            end
+            
+            -- if the lazers go off screen, bring them back
+            if self.x < 0 then
+                self.x = love.graphics.getWidth()
+            elseif self.x > love.graphics.getWidth() then
+                self.x = 0
+            end
+
+            if self.y < 0 then
+                self.y = love.graphics.getHeight()
+            elseif self.y > love.graphics.getHeight() then
+                self.y = 0
+            end
+
+            -- increase the distance traveled
+            self.distance = self.distance + math.sqrt((self.x_vel ^ 2) + (self.y_vel ^ 2))
+        end,
+
+        expload = function (self)
+            self.expload_time = math.ceil(EXPLODE_DUR * (love.timer.getFPS() / 100))
+
+            if self.expload_time > EXPLODE_DUR then
+                self.exploading = 2
+            end
+        end
+    }
+end
+
+return Lazer

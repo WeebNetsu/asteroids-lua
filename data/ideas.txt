@@ -1,0 +1,1 @@
+When the player score > high score, increase high score size (and maybe hide score, or shrink it)
