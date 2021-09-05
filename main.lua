@@ -3,15 +3,19 @@ require "globals"
 local Player = require "Player"
 local Game = require "Game"
 local Menu = require "Menu"
+local SFX = require "SFX"
 
 math.randomseed(os.time()) -- randomize game
 
 function love.load()
     local save_data = readJSON("save")
 
-    player = Player(2, show_debugging)
-    game = Game(save_data)
-    menu = Menu(game, player)
+    sfx = SFX()
+    player = Player(3, sfx, show_debugging)
+    game = Game(save_data, sfx)
+    menu = Menu(game, player, sfx)
+
+    sfx.playBGM()
 end
 
 -- KEYBINDINGS --
@@ -61,7 +65,7 @@ function love.update(dt)
                         game:changeGameState("ended")
                         return
                     end
-                    player = Player(player.lives - 1, show_debugging)
+                    player = Player(player.lives - 1, sfx, show_debugging)
                 end
             end
     

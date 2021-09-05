@@ -1,7 +1,8 @@
 local Text = require "Text"
 
-function Button(func, func_param, text_color, button_color, width, height, text, text_align, font_size, button_x, button_y, text_x, text_y)
+function Button(func, text_color, button_color, width, height, text, text_align, font_size, button_x, button_y, text_x, text_y)
     local btn_text = {}
+    func = func or function() print("This button has no function attached") end
 
     if text_y then
         btn_text.y = text_y + button_y
@@ -19,8 +20,6 @@ function Button(func, func_param, text_color, button_color, width, height, text,
         button_color = button_color or { r = 0, g = 0, b = 0 }, -- black
         width = width or 100,
         height = height or 100,
-        func = func or function() print("This button has no function attached") end,
-        func_param = func_param,
         text = text or "No text added",
         text_x = text_x or button_x or 0,
         text_y = text_y or button_y or 0,
@@ -57,7 +56,7 @@ function Button(func, func_param, text_color, button_color, width, height, text,
         end,
 
         click = function (self)
-            self:func(self.func_param)
+            func()
         end,
 
         draw = function (self)

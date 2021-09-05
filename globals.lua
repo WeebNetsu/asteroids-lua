@@ -19,7 +19,7 @@ end
         description: Will search for 'data/save.json'
  ]]
 function readJSON(file_name)
-    local file = io.open("data/" .. file_name .. ".json", "r")
+    local file = io.open("src/data/" .. file_name .. ".json", "r")
     local data = file:read("*all")
     file:close()
 
@@ -39,7 +39,7 @@ end
  ]]
 function writeJSON(file_name, data)
     print(lunajson.encode(data))
-    local file = io.open("data/" .. file_name .. ".json", "w")
+    local file = io.open("src/data/" .. file_name .. ".json", "w")
     file:write(lunajson.encode(data))
     file:close()
 end

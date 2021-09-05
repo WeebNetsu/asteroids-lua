@@ -3,7 +3,7 @@ require "globals"
 local Asteroids = require "Asteroids"
 local Text = require "Text"
 
-function Game(save_data)
+function Game(save_data, sfx)
     return {
         level = 1,
         state = {
@@ -84,8 +84,6 @@ function Game(save_data)
                 self:changeGameState("ended")
                 return
             else
-                -- TODO: Make below work, self isn't responding
-                -- TODO: You can try to move Menu.lua to main.lua
                 self:changeGameState("running")
             end
         
@@ -112,7 +110,7 @@ function Game(save_data)
                     as_y = math.floor(math.random(love.graphics.getHeight()))
                 until calculateDistance(player.x, player.y, as_x, as_y) > ASTEROID_SIZE * 2 + player.radius -- make sure asteroids doesn't appear on player
         
-                table.insert(asteroids, i, Asteroids(as_x, as_y, ASTEROID_SIZE, self.level, show_debugging))
+                table.insert(asteroids, i, Asteroids(as_x, as_y, ASTEROID_SIZE, self.level, sfx, show_debugging))
             end
         end
     }

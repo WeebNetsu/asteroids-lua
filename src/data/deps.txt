@@ -1,0 +1,5 @@
+# executed with lua5.3
+# installed with luarocks locally
+# added info to path: eval "$(luarocks path --bin)"
+
+lunajson

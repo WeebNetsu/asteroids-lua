@@ -1,6 +1,6 @@
 local Lazer = require "Lazer"
 
-function Player(num_lives, debugging)
+function Player(num_lives, sfx, debugging)
     local SHIP_SIZE = 30
     local EXPLOAD_DUR = 3 -- how long the ship will expload (in seconds)
     local USABLE_BLINKS = 10 * 2 -- How many times the ship should blink before becoming vincible again (* 2 since it gets cut in half later)
@@ -58,6 +58,8 @@ function Player(num_lives, debugging)
                     self.y -  ((4 / 3) * self.radius) * math.sin(self.angle),
                     self.angle
                 ))
+
+                sfx:playFX("laser")
             end
         end,
 
@@ -196,7 +198,10 @@ function Player(num_lives, debugging)
                 if self.thrusting then
                     self.thrust.x = self.thrust.x + self.thrust.speed * math.cos(self.angle) / FPS
                     self.thrust.y = self.thrust.y - self.thrust.speed * math.sin(self.angle) / FPS
+
+                    sfx:playFX("thruster", "slow")
                 else
+                    sfx:stopFX("thruster")
                     -- applies friction to stop the ship
                     if self.thrust.x ~= 0 or self.thrust.y ~= 0 then
                         self.thrust.x = self.thrust.x - friction * self.thrust.x / FPS
@@ -238,6 +243,7 @@ function Player(num_lives, debugging)
         end,
 
         expload = function (self)
+            sfx:playFX("ship_explosion")
             self.expload_time = math.ceil(EXPLOAD_DUR * love.timer.getFPS())
         end
     }

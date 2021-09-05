@@ -1,3 +1,8 @@
+src/data/test.lua
+src/data/ideas.txt
+src/sounds/all
+.vscode/
+
 # Compiled Lua sources
 luac.out
 
