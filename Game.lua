@@ -15,6 +15,7 @@ function Game(save_data, sfx)
         score = 0,
         high_score = save_data.high_score or 0,
         screen_text = {},
+        gameOverShowing = false,
 
         saveGame = function (self)
             writeJSON("save", {
@@ -34,6 +35,8 @@ function Game(save_data, sfx)
                 "center"
             )}
 
+            self.gameOverShowing = true
+
             self:saveGame()
         end,
 
@@ -43,14 +46,23 @@ function Game(save_data, sfx)
             self.state.running = state == "running"
             self.state.ended = state == "ended"
 
-            if state == "ended" then
+            if self.state.ended then
                self:gameOver()
             end
         end,
 
-        draw = function (self) 
+        draw = function (self)
             for index, text in pairs(self.screen_text) do
-                text:draw(self.screen_text, index)
+                if self.gameOverShowing then
+                    -- do this until return false
+                    self.gameOverShowing = text:draw(self.screen_text, index)
+                    
+                    if not self.gameOverShowing then
+                        self:changeGameState("menu")
+                    end
+                else
+                    text:draw(self.screen_text, index)
+                end
             end
 
             -- Text that should always be on screen

@@ -1,3 +1,4 @@
+-- sudo luarocks install lunajson
 require "globals"
 
 local Player = require "Player"
@@ -115,6 +116,8 @@ function love.draw()
         game:draw()
     elseif game.state.menu then
         menu:draw()
+    elseif game.state.ended then
+        game:draw()
     end
 
     love.graphics.circle("fill", mouse_x, mouse_y, 10)

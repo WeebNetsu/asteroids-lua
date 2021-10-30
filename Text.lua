@@ -78,7 +78,10 @@ function Text(text, x, y, font_size, fade_in, fade_out, wrap_width, align, opaci
                 love.graphics.printf(self.text, self.x, self.y, wrap_width, align)
             else
                 table.remove(tbl_text, index) -- remove yourself once you dissapear
+                return false
             end
+
+            return true
         end
     }
 end
