@@ -30,8 +30,14 @@ function Asteroids(x, y, ast_size, level, sfx, debugging)
         vert = vert, -- verticies
         offset = offset,
 
-        draw = function (self)
-            love.graphics.setColor(186 / 255, 189 / 255, 182 / 255)
+        draw = function (self, faded)
+            local opacity = 1
+            
+            if faded then
+                opacity = 0.2
+            end
+
+            love.graphics.setColor(186 / 255, 189 / 255, 182 / 255, opacity)
 
             local points = {self.x + self.radius * self.offset[1] * math.cos(self.angle), self.y + self.radius * self.offset[1] * math.sin(self.angle)}
 

@@ -13,20 +13,26 @@ function Lazer(x, y, angle)
         exploading = 0,
         expload_time = 0,
 
-        draw = function (self)
+        draw = function (self, faded)
+            local opacity = 1
+            
+            if faded then
+                opacity = 0.2
+            end
+
             -- if lazer is not exploading
             if self.exploading < 1 then
-                love.graphics.setColor(1, 1, 1)
+                love.graphics.setColor(1, 1, 1, opacity)
                 -- set size of points in px (or dpi, idk)
                 love.graphics.setPointSize(3)
                 -- put point on screen
                 love.graphics.points(self.x, self.y)
             else -- if lazer exploaded
                 -- TODO: Change explosion colors
-                love.graphics.setColor(1, 104/255, 0)
+                love.graphics.setColor(1, 104/255, 0, opacity)
                 love.graphics.circle("fill", self.x, self.y, 7 * 1.5)
 
-                love.graphics.setColor(1, 234/255, 0)
+                love.graphics.setColor(1, 234/255, 0, opacity)
                 love.graphics.circle("fill", self.x, self.y, 7 * 1)
             end
         end,

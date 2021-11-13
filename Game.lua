@@ -51,7 +51,13 @@ function Game(save_data, sfx)
             end
         end,
 
-        draw = function (self)
+        draw = function (self, faded)
+            local opacity = 1
+            
+            if faded then
+                opacity = 0.2
+            end
+
             for index, text in pairs(self.screen_text) do
                 if self.gameOverShowing then
                     -- do this until return false
@@ -75,7 +81,7 @@ function Game(save_data, sfx)
                 false,
                 love.graphics.getWidth(),
                 "right",
-                0.6
+                faded and opacity or 0.6
             ):draw()
 
             Text(
@@ -87,8 +93,22 @@ function Game(save_data, sfx)
                 false,
                 love.graphics.getWidth(),
                 "center",
-                0.5
+                faded and opacity or 0.5
             ):draw()
+
+            if faded then
+                Text(
+                "PAUSED",
+                0,
+                love.graphics.getHeight() * 0.4,
+                "h1",
+                false,
+                false,
+                love.graphics.getWidth(),
+                "center",
+                1
+            ):draw()
+            end
         end,
 
         startNewGame = function (self, player)

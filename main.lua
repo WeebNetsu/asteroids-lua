@@ -9,37 +9,52 @@ local SFX = require "SFX"
 math.randomseed(os.time()) -- randomize game
 
 function love.load()
+    love.mouse.setVisible(false)
     local save_data = readJSON("save")
-
+    
     sfx = SFX()
     player = Player(3, sfx, show_debugging)
     game = Game(save_data, sfx)
     menu = Menu(game, player, sfx)
-
+    
     sfx.playBGM()
 end
 
 -- KEYBINDINGS --
 
 function love.keypressed(key)
-    if key == "w" then
-        player.thrusting = true
-    end
+    if game.state.running then
+        if key == "w" or key == "up" or key == "kp8" then
+            player.thrusting = true
+        end
 
-    if key == "space" then
-        player:shootLazer()
+        if key == "space" or key == "down" or key == "kp5" then
+            player:shootLazer()
+        end
+
+        if key == "escape" then
+            game:changeGameState("paused")
+        end
+    elseif game.state.paused then
+        if key == "escape" then
+            game:changeGameState("running")
+        end
     end
 end
 
 function love.keyreleased(key)
-    if key == "w" then
+    if key == "w" or key == "up" or key == "kp8" then
         player.thrusting = false
     end
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
     if button == 1 then
-        clickedMouse = true
+        if game.state.running then
+            player:shootLazer()
+        else
+            clickedMouse = true
+        end
     end
 end
 
@@ -100,28 +115,33 @@ function love.update(dt)
     elseif game.state.menu then
         menu:run(clickedMouse)
         clickedMouse = false
+    elseif game.state.paused then
+        
     end
 end
 
 function love.draw()
     -- believe me, this if statement solves a ton of issues
-    if game.state.running then
-        player:drawLives()
-        player:draw()
+    if game.state.running or game.state.paused then
+        player:drawLives(game.state.paused)
+        player:draw(game.state.paused)
 
         for _, asteroid in pairs(asteroids) do
-            asteroid:draw()
+            asteroid:draw(game.state.paused)
         end
 
-        game:draw()
+        game:draw(game.state.paused)
     elseif game.state.menu then
         menu:draw()
     elseif game.state.ended then
         game:draw()
     end
 
-    love.graphics.circle("fill", mouse_x, mouse_y, 10)
-
     love.graphics.setColor(1, 1, 1, 1)
+    
+    if not game.state.running then
+        love.graphics.circle("fill", mouse_x, mouse_y, 10)
+    end
+
     love.graphics.print(love.timer.getFPS(), 10, 10)
 end

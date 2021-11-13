@@ -67,7 +67,13 @@ function Player(num_lives, sfx, debugging)
             table.remove(self.lazers, index)
         end,
         
-        draw = function (self)
+        draw = function (self, faded)
+            local opacity = 1
+            
+            if faded then
+                opacity = 0.2
+            end
+
             if not self.exploading then -- if the ship is not exploading
                 if self.thrusting then
                     -- create flame resizing animation
@@ -98,9 +104,9 @@ function Player(num_lives, sfx, debugging)
                 end
     
                 if self.invincible_seen then
-                    love.graphics.setColor(1, 1, 1, 0.5)
+                    love.graphics.setColor(1, 1, 1, faded and opacity or 0.5)
                 else
-                    love.graphics.setColor(1, 1, 1)
+                    love.graphics.setColor(1, 1, 1, opacity)
                 end
 
                 love.graphics.polygon(
@@ -116,7 +122,7 @@ function Player(num_lives, sfx, debugging)
 
                 -- draw lazers
                 for _, lazer in pairs(self.lazers) do
-                    lazer:draw()
+                    lazer:draw(faded)
                 end
             else -- if the ship exploaded
                 love.graphics.setColor(1, 0, 0)
@@ -130,20 +136,26 @@ function Player(num_lives, sfx, debugging)
             end
         end,
 
-        drawLives = function (self)
+        drawLives = function (self, faded)
+            local opacity = 1
+
+            if faded then
+                opacity = 0.2
+            end
+
             if self.lives == 2 then
-                love.graphics.setColor(1, 1, 0.5, 1)
+                love.graphics.setColor(1, 1, 0.5, opacity)
             elseif self.lives == 1 then
-                love.graphics.setColor(1, 0.2, 0.2, 1)
+                love.graphics.setColor(1, 0.2, 0.2, opacity)
             else
-                love.graphics.setColor(1, 1, 1, 1)
+                love.graphics.setColor(1, 1, 1, opacity)
             end
             
             local x_pos, y_pos = 45, 30
             for i = 1, self.lives do
                 if self.exploading then
                     if i == self.lives then
-                        love.graphics.setColor(1, 0, 0, 1)
+                        love.graphics.setColor(1, 0, 0, opacity)
                     end
                 end
 
@@ -187,11 +199,11 @@ function Player(num_lives, sfx, debugging)
                 -- basically turn 360 deg every second
                 self.rotation = 360 / 180 * math.pi / FPS
 
-                if love.keyboard.isDown("a") then -- rotate left
+                if love.keyboard.isDown("a") or love.keyboard.isDown("left") or love.keyboard.isDown("kp4") then -- rotate left
                     self.angle = self.angle + self.rotation
                 end
                 
-                if love.keyboard.isDown("d") then -- rotate right
+                if love.keyboard.isDown("d") or love.keyboard.isDown("right") or love.keyboard.isDown("kp6") then -- rotate right
                     self.angle = self.angle - self.rotation
                 end
 
