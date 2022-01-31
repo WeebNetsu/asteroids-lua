@@ -1,7 +1,7 @@
-require "globals"
+local love = require "love"
 
-local Asteroids = require "Asteroids"
-local Text = require "Text"
+local Text = require "../components/Text"
+local Asteroids = require "../objects/Asteroids"
 
 function Game(save_data, sfx)
     return {
@@ -15,12 +15,23 @@ function Game(save_data, sfx)
         score = 0,
         high_score = save_data.high_score or 0,
         screen_text = {},
-        gameOverShowing = false,
+        game_over_showing = false,
 
         saveGame = function (self)
             writeJSON("save", {
                 high_score = self.high_score
             })
+        end;
+
+        changeGameState = function (self, state)
+            self.state.menu = state == "menu"
+            self.state.paused = state == "paused"
+            self.state.running = state == "running"
+            self.state.ended = state == "ended"
+
+            if self.state.ended then
+               self:gameOver()
+            end
         end,
 
         gameOver = function (self)
@@ -35,20 +46,10 @@ function Game(save_data, sfx)
                 "center"
             )}
 
-            self.gameOverShowing = true
+            self.game_over_showing = true
 
+            -- save high score
             self:saveGame()
-        end,
-
-        changeGameState = function (self, state)
-            self.state.menu = state == "menu"
-            self.state.paused = state == "paused"
-            self.state.running = state == "running"
-            self.state.ended = state == "ended"
-
-            if self.state.ended then
-               self:gameOver()
-            end
         end,
 
         draw = function (self, faded)
@@ -59,11 +60,10 @@ function Game(save_data, sfx)
             end
 
             for index, text in pairs(self.screen_text) do
-                if self.gameOverShowing then
-                    -- do this until return false
-                    self.gameOverShowing = text:draw(self.screen_text, index)
+                if self.game_over_showing then
+                    self.game_over_showing = text:draw(self.screen_text, index)
                     
-                    if not self.gameOverShowing then
+                    if not self.game_over_showing then
                         self:changeGameState("menu")
                     end
                 else
@@ -71,7 +71,6 @@ function Game(save_data, sfx)
                 end
             end
 
-            -- Text that should always be on screen
             Text(
                 "SCORE: " .. self.score,
                 -20,
@@ -98,16 +97,16 @@ function Game(save_data, sfx)
 
             if faded then
                 Text(
-                "PAUSED",
-                0,
-                love.graphics.getHeight() * 0.4,
-                "h1",
-                false,
-                false,
-                love.graphics.getWidth(),
-                "center",
-                1
-            ):draw()
+                    "PAUSED",
+                    0,
+                    love.graphics.getHeight() * 0.4,
+                    "h1",
+                    false,
+                    false,
+                    love.graphics.getWidth(),
+                    "center",
+                    1
+                ):draw()
             end
         end,
 
@@ -118,7 +117,7 @@ function Game(save_data, sfx)
             else
                 self:changeGameState("running")
             end
-        
+
             local num_asteroids = 0
             asteroids = {}
             self.screen_text = {Text(
@@ -130,8 +129,7 @@ function Game(save_data, sfx)
                 true,
                 love.graphics.getWidth(),
                 "center"
-            ),
-            }
+            )}
         
             for i = 1, num_asteroids + self.level do
                 local as_x
@@ -140,9 +138,10 @@ function Game(save_data, sfx)
                 repeat
                     as_x = math.floor(math.random(love.graphics.getWidth()))
                     as_y = math.floor(math.random(love.graphics.getHeight()))
-                until calculateDistance(player.x, player.y, as_x, as_y) > ASTEROID_SIZE * 2 + player.radius -- make sure asteroids doesn't appear on player
+                until calculateDistance(player.x, player.y, as_x, as_y) > ASTEROID_SIZE * 2 + player.radius
         
-                table.insert(asteroids, i, Asteroids(as_x, as_y, ASTEROID_SIZE, self.level, sfx, show_debugging))
+                -- pass sfx into asteroids
+                table.insert(asteroids, i, Asteroids(as_x, as_y, ASTEROID_SIZE, self.level, sfx))
             end
         end
     }

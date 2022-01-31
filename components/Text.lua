@@ -1,4 +1,6 @@
---[[ 
+local love = require "love"
+
+--[[
     PARAMETERS:
     -> text: string - text to be displayed (required)
     -> x: number - x position of text (required)
@@ -18,7 +20,7 @@
         options: 0.1 - 1
         NB: Setting fade_in = true will overwrite this to 0.1
  ]]
-function Text(text, x, y, font_size, fade_in, fade_out, wrap_width, align, opacity)
+ function Text(text, x, y, font_size, fade_in, fade_out, wrap_width, align, opacity)
     font_size = font_size or "p"
     fade_in = fade_in or false
     fade_out = fade_out or false

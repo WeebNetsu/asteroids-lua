@@ -1,9 +1,10 @@
-local lunajson = require 'lunajson'
+local lunajson = require 'lunajson' -- luarocks install lunajson
+-- NOTE might have to add eval "$(luarocks path --bin)" for luarocks to work
+-- this also requires lua5.3 (not 5.4 or up)
 
 ASTEROID_SIZE = 100
 show_debugging = false
-destroy_ast = false -- this is so the level doesn't increase when the player crashes into the last asteroid and has 0 lives left
-clickedMouse = false
+destroy_ast = false
 
 function calculateDistance(x1, y1, x2, y2)
     return math.sqrt(((x2 - x1) ^ 2) + ((y2 - y1) ^ 2))
@@ -18,7 +19,7 @@ end
         example: "save"
         description: Will search for 'data/save.json'
  ]]
-function readJSON(file_name)
+ function readJSON(file_name)
     local file = io.open("src/data/" .. file_name .. ".json", "r")
     local data = file:read("*all")
     file:close()
@@ -37,7 +38,7 @@ end
     -> data: table - table to be converted to JSON and saved. (required)
         example: { name = "max" }
  ]]
-function writeJSON(file_name, data)
+ function writeJSON(file_name, data)  -- added a method to write json
     print(lunajson.encode(data))
     local file = io.open("src/data/" .. file_name .. ".json", "w")
     file:write(lunajson.encode(data))

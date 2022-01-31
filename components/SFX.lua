@@ -1,3 +1,5 @@
+local love = require "love"
+
 function SFX()
     -- sound = love.audio.newSource("pling.wav", "static") -- the "static" tells LÖVE to load the file into memory, good for short sound effects
     local bgm = love.audio.newSource("src/sounds/bgm.mp3", "stream") -- the "stream" tells LÖVE to stream the file from disk, good for longer music tracks

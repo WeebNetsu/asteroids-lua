@@ -1,27 +1,42 @@
--- sudo luarocks install lunajson
 require "globals"
 
-local Player = require "Player"
-local Game = require "Game"
-local Menu = require "Menu"
-local SFX = require "SFX"
+local love = require "love"
 
-math.randomseed(os.time()) -- randomize game
+local Player = require "objects/Player"
+local Game = require "states/Game"
+local Menu = require "states/Menu"
+local resetComplete = false -- if game needs to be reset
+local SFX = require "components/SFX"
+
+math.randomseed(os.time())
+
+local function reset()
+    local save_data = readJSON("save")
+
+    -- create the soundeffects
+    sfx = SFX()
+    
+    -- added sfx here and into below objects
+    player = Player(3, sfx)
+    game = Game(save_data, sfx)
+    menu = Menu(game, player, sfx)
+
+    destroy_ast = false
+end
 
 function love.load()
     love.mouse.setVisible(false)
-    local save_data = readJSON("save")
-    
-    sfx = SFX()
-    player = Player(3, sfx, show_debugging)
-    game = Game(save_data, sfx)
-    menu = Menu(game, player, sfx)
-    
+
+    mouse_x, mouse_y = 0, 0
+
+    reset() -- reset now takes in sfx
+
+    -- will play bgm, does not have to be inside reset(), since
+    -- it doesn't have to restart or anything when game over
     sfx.playBGM()
 end
 
 -- KEYBINDINGS --
-
 function love.keypressed(key)
     if game.state.running then
         if key == "w" or key == "up" or key == "kp8" then
@@ -57,19 +72,17 @@ function love.mousepressed(x, y, button, istouch, presses)
         end
     end
 end
-
 -- KEYBINDINGS --
-mouse_x, mouse_y = 0, 0
+
 function love.update(dt)
     mouse_x, mouse_y = love.mouse.getPosition()
+
     if game.state.running then
         player:movePlayer(dt)
 
         for ast_index, asteroid in pairs(asteroids) do
-            -- if the player is not exploading and not invincible
             if not player.exploading and not player.invincible then
                 if calculateDistance(player.x, player.y, asteroid.x, asteroid.y) < player.radius + asteroid.radius then
-                    -- check if ship and asteroid colided
                     player:expload()
                     destroy_ast = true
                 end
@@ -81,13 +94,15 @@ function love.update(dt)
                         game:changeGameState("ended")
                         return
                     end
-                    player = Player(player.lives - 1, sfx, show_debugging)
+
+                    -- add sfx to this player as well
+                    player = Player(player.lives - 1, sfx)
                 end
             end
-    
+
             for _, lazer in pairs(player.lazers) do
                 if calculateDistance(lazer.x, lazer.y, asteroid.x, asteroid.y) < asteroid.radius then
-                    lazer:expload() -- delete lazer
+                    lazer:expload()
                     asteroid:destroy(asteroids, ast_index, game)
                 end
             end
@@ -95,13 +110,12 @@ function love.update(dt)
             if destroy_ast then
                 if player.lives - 1 <= 0 then
                     if player.expload_time == 0 then
-                        -- wait for player to finish exploading before destroying any asteroids
                         destroy_ast = false
-                        asteroid:destroy(asteroids, ast_index, game) -- delete asteroid and split into more asteroids
+                        asteroid:destroy(asteroids, ast_index, game)
                     end
                 else
                     destroy_ast = false
-                    asteroid:destroy(asteroids, ast_index, game) -- delete asteroid and split into more asteroids
+                    asteroid:destroy(asteroids, ast_index, game)
                 end
             end
 
@@ -115,13 +129,19 @@ function love.update(dt)
     elseif game.state.menu then
         menu:run(clickedMouse)
         clickedMouse = false
-    elseif game.state.paused then
-        
+
+        -- this will reset everything to original state
+        if not resetComplete then
+            reset()
+            resetComplete = true
+        end
+    elseif game.state.ended then
+        -- we should reset the game
+        resetComplete = false
     end
 end
 
 function love.draw()
-    -- believe me, this if statement solves a ton of issues
     if game.state.running or game.state.paused then
         player:drawLives(game.state.paused)
         player:draw(game.state.paused)
@@ -136,6 +156,7 @@ function love.draw()
     elseif game.state.ended then
         game:draw()
     end
+
 
     love.graphics.setColor(1, 1, 1, 1)
     

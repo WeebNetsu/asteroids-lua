@@ -1,28 +1,30 @@
-local Lazer = require "Lazer"
+require "globals"
 
-function Player(num_lives, sfx, debugging)
+local love = require "love"
+
+local Lazer = require "objects/Lazer"
+
+function Player(num_lives, sfx)
     local SHIP_SIZE = 30
-    local EXPLOAD_DUR = 3 -- how long the ship will expload (in seconds)
-    local USABLE_BLINKS = 10 * 2 -- How many times the ship should blink before becoming vincible again (* 2 since it gets cut in half later)
-    local LAZER_DISTANCE = 0.6 -- distance lazers can go before dissapearing (0.6 of screen width in this case)
-    local MAX_LAZERS = 10 -- max amount of lazers on screen
+    local EXPLOAD_DUR = 3
     local VIEW_ANGLE = math.rad(90)
-
-    debugging = debugging or false
+    local LAZER_DISTANCE = 0.6
+    local MAX_LAZERS = 10
+    local USABLE_BLINKS = 10 * 2
 
     return {
         x = love.graphics.getWidth() / 2,
         y = love.graphics.getHeight() / 2,
         radius = SHIP_SIZE / 2,
-        angle = VIEW_ANGLE, -- angle gets calculated as radian
+        angle = VIEW_ANGLE,
         rotation = 0,
-        expload_time = 0, -- if the ship crashed
+        expload_time = 0,
         exploading = false,
         thrusting = false,
         invincible = true,
         invincible_seen = true,
         time_blinked = USABLE_BLINKS,
-        lazers = {}, -- lazers x, y, x_velocity, y_velocity data
+        lazers = {},
         thrust = {
             x = 0,
             y = 0,
@@ -36,11 +38,11 @@ function Player(num_lives, sfx, debugging)
             if self.invincible_seen then
                 table.insert(color, 0.5)
             end
+            
             love.graphics.setColor(color)
 
             love.graphics.polygon(
-                fillType, -- flame outside ship
-                -- the 4 / 3 and 2 / 3 is to find the center of the triangle correctly
+                fillType,
                 self.x - self.radius * (2 / 3 * math.cos(self.angle) + 0.5 * math.sin(self.angle)),
                 self.y + self.radius * (2 / 3 * math.sin(self.angle) - 0.5 * math.cos(self.angle)),
                 self.x - self.radius * self.thrust.flame * math.cos(self.angle),
@@ -52,13 +54,13 @@ function Player(num_lives, sfx, debugging)
 
         shootLazer = function (self)
             if (#self.lazers <= MAX_LAZERS) then
-                -- lazer spawn from front of ship
                 table.insert(self.lazers, Lazer(
                     self.x + ((4 / 3) * self.radius) * math.cos(self.angle),
                     self.y -  ((4 / 3) * self.radius) * math.sin(self.angle),
                     self.angle
                 ))
 
+                -- add laser sfx
                 sfx:playFX("laser")
             end
         end,
@@ -66,7 +68,7 @@ function Player(num_lives, sfx, debugging)
         destroyLazer = function (self, index)
             table.remove(self.lazers, index)
         end,
-        
+
         draw = function (self, faded)
             local opacity = 1
             
@@ -74,9 +76,8 @@ function Player(num_lives, sfx, debugging)
                 opacity = 0.2
             end
 
-            if not self.exploading then -- if the ship is not exploading
+            if not self.exploading then
                 if self.thrusting then
-                    -- create flame resizing animation
                     if not self.thrust.big_flame then
                         self.thrust.flame = self.thrust.flame - 1 / love.timer.getFPS()
     
@@ -91,18 +92,19 @@ function Player(num_lives, sfx, debugging)
                         end
                     end
 
-                    self:draw_flame_thrust("fill", {255/255 ,102/255 ,25/255}) -- draw flame thrust
-                    self:draw_flame_thrust("line", {1, 0.16, 0}) -- flame thrust outline
+                    self:draw_flame_thrust("fill", {255/255 ,102/255 ,25/255})
+                    self:draw_flame_thrust("line", {1, 0.16, 0})
                 end
                 
-                if debugging then
+                if show_debugging then
                     love.graphics.setColor(1, 0, 0)
     
-                    love.graphics.rectangle( "fill", self.x - 1, self.y - 1, 2, 2 ) -- shows center of triangle
+                    love.graphics.rectangle( "fill", self.x - 1, self.y - 1, 2, 2 )
                     
-                    love.graphics.circle("line", self.x, self.y, self.radius) -- the hitbox of the ship
+                    love.graphics.circle("line", self.x, self.y, self.radius)
                 end
-    
+
+                -- change opacity depending if player is invisible_seen
                 if self.invincible_seen then
                     love.graphics.setColor(1, 1, 1, faded and opacity or 0.5)
                 else
@@ -110,8 +112,7 @@ function Player(num_lives, sfx, debugging)
                 end
 
                 love.graphics.polygon(
-                    "line", -- ship
-                    -- the 4 / 3 and 2 / 3 is to find the center of the triangle correctly
+                    "line",
                     self.x + ((4 / 3) * self.radius) * math.cos(self.angle),
                     self.y -  ((4 / 3) * self.radius) * math.sin(self.angle),
                     self.x - self.radius * (2 / 3 * math.cos(self.angle) + math.sin(self.angle)),
@@ -120,11 +121,10 @@ function Player(num_lives, sfx, debugging)
                     self.y + self.radius * (2 / 3 * math.sin(self.angle) + math.cos(self.angle))
                 )
 
-                -- draw lazers
                 for _, lazer in pairs(self.lazers) do
                     lazer:draw(faded)
                 end
-            else -- if the ship exploaded
+            else
                 love.graphics.setColor(1, 0, 0)
                 love.graphics.circle("fill", self.x, self.y, self.radius * 1.5)
 
@@ -160,10 +160,9 @@ function Player(num_lives, sfx, debugging)
                 end
 
                 love.graphics.polygon(
-                    "line", -- ship
-                    -- the 4 / 3 and 2 / 3 is to find the center of the triangle correctly
-                    (i * x_pos) + ((4 / 3) * self.radius) * math.cos(VIEW_ANGLE), -- x location
-                    y_pos -  ((4 / 3) * self.radius) * math.sin(VIEW_ANGLE), -- y location
+                    "line",
+                    (i * x_pos) + ((4 / 3) * self.radius) * math.cos(VIEW_ANGLE),
+                    y_pos -  ((4 / 3) * self.radius) * math.sin(VIEW_ANGLE),
                     (i * x_pos) - self.radius * (2 / 3 * math.cos(VIEW_ANGLE) + math.sin(VIEW_ANGLE)),
                     y_pos + self.radius * (2 / 3 * math.sin(VIEW_ANGLE) - math.cos(VIEW_ANGLE)),
                     (i * x_pos) - self.radius * (2 / 3 * math.cos(VIEW_ANGLE) - math.sin(VIEW_ANGLE)),
@@ -190,20 +189,20 @@ function Player(num_lives, sfx, debugging)
                 self.invincible_seen = false
             end
 
+
             self.exploading = self.expload_time > 0
 
             if not self.exploading then
                 local FPS = love.timer.getFPS()
-                local friction = 0.7 -- 0 = no friction
+                local friction = 0.7
 
-                -- basically turn 360 deg every second
                 self.rotation = 360 / 180 * math.pi / FPS
 
-                if love.keyboard.isDown("a") or love.keyboard.isDown("left") or love.keyboard.isDown("kp4") then -- rotate left
+                if love.keyboard.isDown("a") or love.keyboard.isDown("left") or love.keyboard.isDown("kp4") then
                     self.angle = self.angle + self.rotation
                 end
                 
-                if love.keyboard.isDown("d") or love.keyboard.isDown("right") or love.keyboard.isDown("kp6") then -- rotate right
+                if love.keyboard.isDown("d") or love.keyboard.isDown("right") or love.keyboard.isDown("kp6") then
                     self.angle = self.angle - self.rotation
                 end
 
@@ -211,10 +210,12 @@ function Player(num_lives, sfx, debugging)
                     self.thrust.x = self.thrust.x + self.thrust.speed * math.cos(self.angle) / FPS
                     self.thrust.y = self.thrust.y - self.thrust.speed * math.sin(self.angle) / FPS
 
+                    -- play thruster sound
                     sfx:playFX("thruster", "slow")
                 else
+                    -- stop thruster from playing
                     sfx:stopFX("thruster")
-                    -- applies friction to stop the ship
+
                     if self.thrust.x ~= 0 or self.thrust.y ~= 0 then
                         self.thrust.x = self.thrust.x - friction * self.thrust.x / FPS
                         self.thrust.y = self.thrust.y - friction * self.thrust.y / FPS
@@ -224,7 +225,6 @@ function Player(num_lives, sfx, debugging)
                 self.x = self.x + self.thrust.x
                 self.y = self.y + self.thrust.y
 
-                -- make sure the ship can't go off screen
                 if self.x + self.radius < 0 then
                     self.x = love.graphics.getWidth() + self.radius
                 elseif self.x - self.radius > love.graphics.getWidth() then
@@ -238,23 +238,21 @@ function Player(num_lives, sfx, debugging)
                 end
             end
 
-            -- this will also move the lazer
             for index, lazer in pairs(self.lazers) do
                 if (lazer.distance > LAZER_DISTANCE * love.graphics.getWidth()) and (lazer.exploading == 0) then
                     lazer:expload()
-                   
-                    -- ::continue:: -- * we don't need continue because lua handles the removal of items in an array for us with the pairs() loop
                 end
                 
-                if lazer.exploading == 0 then -- 0 -> lazer not exploading
+                if lazer.exploading == 0 then
                     lazer:move()
-                elseif lazer.exploading == 2 then -- 2 -> lazer is done exploading
+                elseif lazer.exploading == 2 then
                     self.destroyLazer(self, index)
                 end
             end
         end,
 
         expload = function (self)
+            -- play ship exploasion music
             sfx:playFX("ship_explosion")
             self.expload_time = math.ceil(EXPLOAD_DUR * love.timer.getFPS())
         end
